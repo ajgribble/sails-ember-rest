@@ -63,7 +63,7 @@ module.exports = function(interrupts = {}) {
 
     parallel(
       {
-        count: JsonApi.countRelationship(Model, association, parentPk),
+        count: sails.helpers.countRelationship.with({ model: Model, association, pk: parentPk }),
         records: done => {
           Model.findOne(parentPk)
             .populate(relation, populateOptions)
