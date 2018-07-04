@@ -1,6 +1,6 @@
 import supertest from 'supertest';
 
-describe.only('Integration | policies | validation', function() {
+describe('Integration | policies | validation', function() {
   describe(':: jsonApiValidateHeaders policy', function() {
     it('should return a 415 when the Content Type header is not set to application/vnd.api+json', function(done) {
       supertest(sails.hooks.http.app)

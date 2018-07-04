@@ -1,6 +1,6 @@
-import { controller } from './../../index';
+import { controllers } from './../../index';
 
-const DummyController = new controller({
+const DummyController = new controllers.JsonApiController({
   hello(req, res) {
     return res.ok('Hello.');
   }
