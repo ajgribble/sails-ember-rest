@@ -79,7 +79,7 @@ module.exports = {
         // Side-load any requested relationships
         const assocAssociations = actionUtil.getAssociationConfiguration(assocModel, 'detail');
         const serializedResources = record[alias].map(r => {
-          return JsonApi.serializeResource(r, assocType, assocAssociations);
+          return JSONAPISerializer.serialize(kebabCase(assocType), r, assocAssociations)
         });
         const linkedRecords = JsonApi.linkAssociations(assocModel, serializedResources);
         if (include && alias === include) {
@@ -93,7 +93,7 @@ module.exports = {
         assocType = pluralize(assocModel.globalId.toLowerCase());
 
         // Side-load any requested relationships
-        const serializedResource = JsonApi.serializeResource(record[alias], assocType);
+        const serializedResource = JSONAPISerializer.serialize(kebabCase(record[assocType]), alias);
         const linkedRecords = JsonApi.linkAssociations(assocModel, serializedResource);
         if (include && alias === include) {
           included = uniqBy(included.concat(linkedRecords), assocPK);
@@ -117,50 +117,6 @@ module.exports = {
     if (included.length > 0) {
       json.included = included;
     }
-  },
-
-  /**
-   * Serialize an individual resource json hash into its JSON:API equivalent
-   *
-   * @param {Object} json A record hash
-   * @param {string} The type of resource being serialized
-   * @return {Object} A JSON:API resource
-   */
-  // XXX serializeResource(json, type, associations = [], linkSuffix = '') {
-  serializeResource(json, type, meta) {
-
-    /*
-    const { id } = json;
-    const attributes = Object.keys(omit(json, ['id'])).reduce(
-      (acc, key) => Object.assign({}, acc, { [kebabCase(key)]: json[key] }),
-      {}
-    );
-    const links = {
-      self: JsonApi.generateResourceLink(type.toLowerCase(), linkSuffix)
-    };
-    const relationships = associations.reduce((acc, assoc) => {
-      const { alias } = assoc;
-      return Object.assign({}, acc, {
-        [alias]: {
-          links: {
-            related: `${links.self}/${alias}`,
-            self: `${links.self}/relationships/${alias}`
-          },
-          data: Array.isArray(json[alias])
-            ? json[alias].map(item => ({ type: kebabCase(alias), id: item.id }))
-            : { type: kebabCase(alias), id }
-        }
-      });
-    }, {});
-
-    // Remove relationships from attributes
-    associations.forEach(assoc => {
-      delete attributes[assoc.alias];
-    });
-    */
-
-    return JSONAPISerializer.serialize(kebabCase(type), json, meta);
-    // return { id: String(id), type: kebabCase(type), attributes, links, relationships };
   },
 
   /**
@@ -268,7 +224,7 @@ module.exports = {
 
     return json;
     */
-    return JsonApi.serializeResource(records, modelPlural, meta);
+    return JSONAPISerializer.serialize(kebabCase(modelPlural), records, meta)
   },
 
   /**
