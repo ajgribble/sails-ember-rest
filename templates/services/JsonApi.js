@@ -120,57 +120,6 @@ module.exports = {
   },
 
   /**
-   * Prepare records and populated associations to be consumed by JsonApi's DS.RESTAdapter in link mode
-   *
-   * @param {Collection} model Waterline collection object (returned from parseModel)
-   * @param {Array|Object} records A record or an array of records returned from a Waterline query
-   * @return {Array} The returned structure can be consumed by DS.JSONAPIAdapter when passed to res.json()
-   */
-  linkAssociations(model, records) {
-    const modelPlural = pluralize(model.identity);
-    const linkPrefix = sails.config.blueprints.linkPrefix ? sails.config.blueprints.linkPrefix : '';
-    records = Array.isArray(records) ? records : [records];
-    return records.map(record => {
-      let links = {};
-      model.associations.forEach(assoc => {
-        if (assoc.type === 'collection') {
-          //Had to modify this code to run on app hosted at subroute
-          links[assoc.alias] = linkPrefix + '/' + modelPlural + '/' + record[model.primaryKey] + '/' + assoc.alias;
-        }
-      });
-      if (Object.keys(links).length > 0) {
-        record.links = links;
-      }
-      return record;
-    });
-  },
-
-  /**
-   * Prepare sideloaded records for final return to JsonApi's DS.RESTAdapter
-   *
-   * @param {Object} json A sideloaded record hash
-   * @param {String} documentIdentifier A string that identifies the primary object queried by the user
-   * @return {Object} The returned structure can be consumed by DS.RESTAdapter when passed to res.json()
-   */
-  finalizeSideloads(json, documentIdentifier) {
-    // filter duplicates in sideloaded records
-    Object.keys(json).forEach(key => {
-      let array = json[key];
-      if (key === documentIdentifier) {
-        return;
-      }
-      if (array.length === 0) {
-        delete json[key];
-        return;
-      }
-      let model = sails.models[pluralize(camelCase(key).toLowerCase(), 1)];
-      JsonApi.linkAssociations(model, array);
-    });
-
-    return json;
-  },
-
-  /**
    * Build a 'Not Found' response body to be consumed by JsonApi's DS.JSONAPIAdapter
    *
    * @param {Collection} model Waterline collection object (returned from parseModel)

@@ -188,7 +188,8 @@ module.exports.Controller = module.exports.controller = require('./templates/con
 module.exports.helpers = {
   buildJsonApiResponse: require('./templates/helpers/build-json-api-response'),
   countRelationship: require('./templates/helpers/count-relationship'),
-  generateResourceLink: require('./templates/helpers/generate-resource-link')
+  generateResourceLink: require('./templates/helpers/generate-resource-link'),
+  linkAssociations: require('./templates/helpers/link-associations')
 };
 module.exports.Hooks = module.exports.hooks = {
   registerSerializers: require('./templates/hooks/register-serializers')

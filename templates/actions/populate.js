@@ -101,11 +101,11 @@ module.exports = function(interrupts = {}) {
             const documentIdentifier = pluralize(camelCase(RelatedModel.globalId));
             const json = {};
 
-            json[documentIdentifier] = JsonApi.linkAssociations(RelatedModel, children);
+            json[documentIdentifier] = sails.helpers.linkAssociations(RelatedModel, children);
             //BOOM! counted relationships!
             res.ok(sails.helpers.buildJsonApiResponse.with({
               model: RelatedModel,
-              records: JsonApi.linkAssociations(RelatedModel, children),
+              records: sails.helpers.linkAssociations(RelatedModel, children),
               meta: { total: results.count }
             }), actionUtil.parseLocals(req));
           },
