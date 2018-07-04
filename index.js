@@ -202,10 +202,13 @@ module.exports.Policies = module.exports.policies = {
   jsonApiHydrate: require('./templates/policies/jsonApiHydrate'),
   jsonApiPopulate: require('./templates/policies/jsonApiPopulate'),
   jsonApiSetHeader: require('./templates/policies/jsonApiSetHeader'),
-  jsonApiUpdate: require('./templates/policies/jsonApiUpdate')
+  jsonApiUpdate: require('./templates/policies/jsonApiUpdate'),
+  jsonApiValidateHeaders: require('./templates/policies/jsonApiValidateHeaders')
 };
 module.exports.Responses = module.exports.responses = {
   created: require('./templates/responses/created'),
-  noContent: require('./templates/responses/noContent')
+  noContent: require('./templates/responses/noContent'),
+  notAcceptable: require('./templates/responses/notAcceptable'),
+  unsupportedMediaType: require('./templates/responses/unsupportedMediaType')
 };
 module.exports.Util = module.exports.util = require('./templates/util/actionUtil');
