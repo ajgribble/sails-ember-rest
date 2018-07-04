@@ -120,25 +120,6 @@ module.exports = {
   },
 
   /**
-   * Create an individual link for a resource
-   *
-   * @param {string} modelPlural The resource's (model) name pluralized
-   * @param {string} linkSuffix Additional content to append to the resource's path (e.g. an alias to a relationship)
-   * @return {string} The returned URL will be a fully qualified path to a resource or collection of resources
-   */
-  generateResourceLink(modelPlural, linkSuffix = '') {
-    const isSsl = (sails.config.ssl && sails.config.ssl.key && sails.config.ssl.cert) || sails.config.proxyHostSsl;
-    const protocol = isSsl ? 'https' : 'http';
-    const host = sails.config.explicitHost || sails.config.proxyHost || 'localhost';
-    const port = sails.config.port || (isSsl ? 443 : 80);
-    const linkPrefix = sails.config.blueprints.linkPrefix ? sails.config.blueprints.linkPrefix : '';
-
-    return `${protocol}://${host}:${port}/${linkPrefix ? '/' + linkPrefix : ''}${modelPlural}${
-      linkSuffix ? '/' + linkSuffix : ''
-    }`;
-  },
-
-  /**
    * Prepare records and populated associations to be consumed by JsonApi's DS.RESTAdapter in link mode
    *
    * @param {Collection} model Waterline collection object (returned from parseModel)

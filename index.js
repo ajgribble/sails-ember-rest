@@ -186,7 +186,8 @@ module.exports.Actions = module.exports.actions = {
 };
 module.exports.Controller = module.exports.controller = require('./templates/controllers/JsonApiController');
 module.exports.helpers = {
-  countRelationship: require('./templates/helpers/count-relationship')
+  countRelationship: require('./templates/helpers/count-relationship'),
+  generateResourceLink: require('./templates/helpers/generate-resource-link')
 };
 module.exports.Hooks = module.exports.hooks = {
   registerSerializers: require('./templates/hooks/register-serializers')
