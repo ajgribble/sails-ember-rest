@@ -103,7 +103,11 @@ module.exports = function(interrupts = {}) {
 
             json[documentIdentifier] = JsonApi.linkAssociations(RelatedModel, children);
             //BOOM! counted relationships!
-            res.ok(JsonApi.buildResponse(RelatedModel, JsonApi.linkAssociations(RelatedModel, children), { total: results.count }), actionUtil.parseLocals(req));
+            res.ok(sails.helpers.buildJsonApiResponse.with({
+              model: RelatedModel,
+              records: JsonApi.linkAssociations(RelatedModel, children),
+              meta: { total: results.count }
+            }), actionUtil.parseLocals(req));
           },
           Model,
           children

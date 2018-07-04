@@ -186,6 +186,7 @@ module.exports.Actions = module.exports.actions = {
 };
 module.exports.Controller = module.exports.controller = require('./templates/controllers/JsonApiController');
 module.exports.helpers = {
+  buildJsonApiResponse: require('./templates/helpers/build-json-api-response'),
   countRelationship: require('./templates/helpers/count-relationship'),
   generateResourceLink: require('./templates/helpers/generate-resource-link')
 };

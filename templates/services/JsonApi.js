@@ -171,44 +171,6 @@ module.exports = {
   },
 
   /**
-   * Prepare records and populated associations to be consumed by JsonApi's DS.JSONAPIAdapter
-   *
-   * @param {Collection} model Waterline collection object (returned from parseModel)
-   * @param {Array|Object} records A record or an array of records returned from a Waterline query
-   * @param {Associations} associations Definition of the associations, from `req.option.associations`
-   * @return {Object} The returned structure can be consumed by DS.JSONAPIAdapter when passed to res.json()
-   */
-  // XXX buildResponse(model, records, associations, associatedRecords, include) {
-  buildResponse(model, records, meta) {
-    const primaryKey = model.primaryKey;
-    const modelIdentity = model.globalId;
-    const modelPlural = pluralize(modelIdentity);
-    /* XXX
-    const documentIdentifier = camelCase(modelPlural);
-    const isCollection = Array.isArray(records);
-    const toJSON = model.customToJSON
-      ? model.customToJSON
-      : function() {
-          return this;
-        };
-
-    const json = { data };
-
-    if (isCollection) {
-      records.forEach(record =>
-        JsonApi.prepareResourceAssociations(record, associations, primaryKey, json, toJSON, associatedRecords, include)
-      );
-    } else {
-      JsonApi.prepareResourceAssociations(records, associations, primaryKey, json, toJSON, associatedRecords, include);
-    }
-    // json = JsonApi.finalizeSideloads(json, documentIdentifier);
-
-    return json;
-    */
-    return JSONAPISerializer.serialize(kebabCase(modelPlural), records, meta)
-  },
-
-  /**
    * Build a 'Not Found' response body to be consumed by JsonApi's DS.JSONAPIAdapter
    *
    * @param {Collection} model Waterline collection object (returned from parseModel)
