@@ -194,7 +194,6 @@ module.exports.helpers = {
 module.exports.Hooks = module.exports.hooks = {
   registerSerializers: require('./templates/hooks/register-serializers')
 };
-module.exports.Service = module.exports.service = require('./templates/services/JsonApi');
 module.exports.Policies = module.exports.policies = {
   jsonApiCreate: require('./templates/policies/jsonApiCreate'),
   jsonApiDestroy: require('./templates/policies/jsonApiDestroy'),
