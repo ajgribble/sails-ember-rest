@@ -118,6 +118,21 @@ describe('Integration | Action | findone', function() {
         .end(done);
     });
 
+    it('should include authors from relationship endpoint', function(done) {
+      supertest(sails.hooks.http.app)
+        .get('/articles/1/comments?include=author')
+        .expect(res => {
+          const { included } = res.body;
+
+          expect(included).to.have.length(2);
+          
+          included.forEach((item) => {
+            expect(item.type).to.equal('author');
+          });
+        })
+        .end(done);
+    });
+
     it('should not honor additional query params', function(done) {
       supertest(sails.hooks.http.app)
         .get('/articles/1?title=XML')
