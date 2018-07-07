@@ -31,12 +31,12 @@ module.exports = function defineRegisterSerializersHook(sails) {
       sails.on('hook:orm:loaded', function() {
         Object.keys(sails.models).forEach((modelName) => {
           const Model = sails.models[modelName];
-          const modelType = pluralize(kebabCase(Model.globalId));
+          const modelType = kebabCase(Model.globalId);
           const relationships = Model.associations
-            .reduce((acc, { alias, type }) => {
+            .reduce((acc, { alias, collection, model, type }) => {
               return Object.assign({}, acc, {
                 [alias]: {
-                  type: kebabCase(type === 'model' ? pluralize(alias) : alias),
+                  type: kebabCase(type === 'model' ? model : collection),
                   links(data) {
                     const base = sails.helpers.generateResourceLink(modelType, data.id);
                     return {
@@ -51,7 +51,7 @@ module.exports = function defineRegisterSerializersHook(sails) {
           JSONAPISerializer.register(modelType, {
             links: {
               self(data) {
-                return sails.helpers.generateResourceLink(modelType, data.id);
+                return sails.helpers.generateResourceLink(pluralize(modelType), data.id);
               }
             },
             relationships,
@@ -61,8 +61,8 @@ module.exports = function defineRegisterSerializersHook(sails) {
             topLevelLinks(data, extraData) {
               return {
                 self: Array.isArray(data)
-                  ? sails.helpers.generateResourceLink(modelType) 
-                  : sails.helpers.generateResourceLink(modelType, data.id) 
+                  ? sails.helpers.generateResourceLink(pluralize(modelType))
+                  : sails.helpers.generateResourceLink(pluralize(modelType), data.id) 
               }
             }
           });

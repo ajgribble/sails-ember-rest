@@ -16,20 +16,18 @@ module.exports = function(interrupts = {}) {
   interrupts.findone = interrupts.findone ? interrupts.findone : defaultInterrupt;
 
   return function(req, res) {
-    // Set the JSONAPI required header
+    // Set the JSON API required header
     res.set('Content-Type', 'application/vnd.api+json');
 
     const Model = actionUtil.parseModel(req);
     const pk = actionUtil.requirePk(req);
     const query = Model.findOne(pk);
-    // Look up the association configuration and determine how to populate the query
-    // @todo support request driven selection of includes/populate
-    // XXX const associations = actionUtil.getAssociationConfiguration(Model, 'detail');
-    // const associations = [{ alias: 'author', type: 'model', model: 'author', include: 'record' }]
+
+    // Look up the association configuration based on the reserved 'include' keyword
     const { include='' } = req.query;
     const associations = sails.helpers.getAssociationConfig
-      .with({ model: Model, include: req.query.include.split(',') })
-    delete req.query.include;
+      .with({ model: Model, include: include.split(',') })
+    delete req.query.include; // Include is no longer required
 
     parallel(
       {

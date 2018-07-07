@@ -86,7 +86,7 @@ describe('Integration | Action | findone', function() {
         .end(done);
     });
 
-    it.only('should only include author data', function(done) {
+    it('should only include author data', function(done) {
       supertest(sails.hooks.http.app)
         .get('/articles/1?include=author')
         .expect(res => {
@@ -101,7 +101,22 @@ describe('Integration | Action | findone', function() {
     });
 
     it('should include both author and comments', function(done) {
+      supertest(sails.hooks.http.app)
+        .get('/articles/1?include=author,comments')
+        .expect(res => {
+          const { included } = res.body;
 
+          expect(included).to.have.length(4);
+          
+          const types = included.reduce((acc, item) => {
+            return item.type === 'author'
+              ? Object.assign({}, acc, { author: acc.author + 1 })
+              : Object.assign({}, acc, { comment: acc.comment + 1 });
+          }, { author: 0, comment: 0 });
+          expect(types.author).to.equal(1);
+          expect(types.comment).to.equal(3);
+        })
+        .end(done);
     });
   });
 
