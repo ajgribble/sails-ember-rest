@@ -85,6 +85,24 @@ describe('Integration | Action | findone', function() {
         })
         .end(done);
     });
+
+    it.only('should only include author data', function(done) {
+      supertest(sails.hooks.http.app)
+        .get('/articles/1?include=author')
+        .expect(res => {
+          const { included } = res.body;
+
+          expect(included).to.have.length(1);
+          expect(included[0].type).to.equal('author');
+          expect(included[0].attributes.name).to.equal('Bob');
+          expect(included[0].attributes.age).to.equal(46);
+        })
+        .end(done);
+    });
+
+    it('should include both author and comments', function(done) {
+
+    });
   });
 
   describe(':: query functions', function() {

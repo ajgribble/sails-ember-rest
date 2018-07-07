@@ -24,7 +24,12 @@ module.exports = function(interrupts = {}) {
     const query = Model.findOne(pk);
     // Look up the association configuration and determine how to populate the query
     // @todo support request driven selection of includes/populate
-    const associations = actionUtil.getAssociationConfiguration(Model, 'detail');
+    // XXX const associations = actionUtil.getAssociationConfiguration(Model, 'detail');
+    // const associations = [{ alias: 'author', type: 'model', model: 'author', include: 'record' }]
+    const { include='' } = req.query;
+    const associations = sails.helpers.getAssociationConfig
+      .with({ model: Model, include: req.query.include.split(',') })
+    delete req.query.include;
 
     parallel(
       {
@@ -43,6 +48,7 @@ module.exports = function(interrupts = {}) {
           return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
         }
         const { matchingRecord, associated } = results;
+
         if (!matchingRecord) {
           return res.notFound('No record found with the specified ' + Model.primaryKey + '.');
         }
@@ -55,6 +61,7 @@ module.exports = function(interrupts = {}) {
               Model.subscribe(req, [matchingRecord[Model.primaryKey]]);
               actionUtil.subscribeDeep(req, matchingRecord);
             }
+
             res.ok(sails.helpers.buildJsonApiResponse.with({ model: Model, records: matchingRecord }), actionUtil.parseLocals(req));
           },
           Model,
