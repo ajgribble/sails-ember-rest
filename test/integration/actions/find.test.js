@@ -67,7 +67,7 @@ describe('Integration | Action | find', function() {
         .expect(res => {
           expect(res.body.data).to.have.lengthOf(2);
           expect(res.body.data[0].id).to.equal('1');
-          expect(res.body.data[0].type).to.equal('articles');
+          expect(res.body.data[0].type).to.equal('article');
           expect(res.body.data[0].attributes.title).to.include('XML');
           expect(res.body.data[0].attributes['created-at']).to.exist;
           expect(res.body.data[0].attributes['createdAt']).to.not.exist;
