@@ -7,7 +7,7 @@ module.exports = {
     include: {
       type: 'ref',
       description: 'A comma-separated (U+002C COMMA, “,”) list of relationship paths',
-      defaultTo: []
+      defaultsTo: []
     },
     model: {
       type: 'ref',
