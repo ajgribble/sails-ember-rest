@@ -235,5 +235,45 @@ describe('Integration | Action | find', function() {
         })
         .end(done);
     });
+    it('should support the include query param with a top-level relationship value', function(done) {
+      supertest(sails.hooks.http.app)
+        .get('/articles?include=author')
+        .expect(res => {
+          const { included } = res.body;
+
+          expect(included).to.have.length(2);
+          expect(included[0].type).to.equal('author');
+          expect(included[1].type).to.equal('author');
+        })
+        .end(done);
+    });
+    it('should support the include query param with multiple top-level relationship value', function(done) {
+      supertest(sails.hooks.http.app)
+        .get('/articles?include=author,comments')
+        .expect(res => {
+          const { included } = res.body;
+
+          expect(included).to.have.length(5);
+          const types = included.reduce((acc, item) => {
+            return item.type === 'author'
+              ? Object.assign({}, acc, { author: acc.author + 1 })
+              : Object.assign({}, acc, { comment: acc.comment + 1 });
+          }, { author: 0, comment: 0 });
+          expect(types.author).to.equal(2);
+          expect(types.comment).to.equal(3);
+        })
+        .end(done);
+    });
+    it('should support the include query param with with additional params', function(done) {
+      supertest(sails.hooks.http.app)
+        .get('/articles?include=author&title[contains]=XML')
+        .expect(res => {
+          const { included } = res.body;
+
+          expect(included).to.have.length(1);
+          expect(included[0].type).to.equal('author');
+        })
+        .end(done);
+    });
   });
 });
