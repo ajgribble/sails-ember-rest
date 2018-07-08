@@ -25,8 +25,22 @@ const populate = require('./templates/actions/populate');
 const update = require('./templates/actions/update');
 
 module.exports = function defineSailsJsonApiHook(sails) {
-
   return {
+    /**
+     * Custom Controller
+     */
+    controller: require('./templates/controllers/JsonApiController'),
+
+    /**
+     * Custom Responses
+     * There is not currently a binding into registering custom responses via a hook
+     */
+    responses: {
+      created: require('./templates/responses/created'),
+      noContent: require('./templates/responses/noContent'),
+      notAcceptable: require('./templates/responses/notAcceptable'),
+      unsupportedMediaType: require('./templates/responses/unsupportedMediaType')
+    },
 
     /**
      * Runs when a Sails app loads/lifts.
@@ -36,7 +50,7 @@ module.exports = function defineSailsJsonApiHook(sails) {
     initialize(done) {
       sails.log.info('Initializing custom hook (`sails-json-api`)');
 
-      // Once the ORM has loaded, dynamically register all models in the JSONAPI Serializer
+      // Once the ORM has loaded, dynamically register all models in the JSON API Serializer
       sails.on('hook:orm:loaded', function() {
         Object.keys(sails.models).forEach((modelName) => {
           const Model = sails.models[modelName];
@@ -120,13 +134,5 @@ module.exports = function defineSailsJsonApiHook(sails) {
   };
 };
 
-module.exports.controllers = {
-  JsonApiController: require('./templates/controllers/JsonApiController')
-},
-module.exports.responses = {
-  created: require('./templates/responses/created'),
-  noContent: require('./templates/responses/noContent'),
-  notAcceptable: require('./templates/responses/notAcceptable'),
-  unsupportedMediaType: require('./templates/responses/unsupportedMediaType')
-};
+// TODO: Move all actionUtil functions to their own helpers and register in hook
 module.exports.util = require('./templates/util/actionUtil');
