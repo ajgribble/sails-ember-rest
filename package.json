@@ -60,9 +60,7 @@
         "waterline": "^0.13.4",
         "sails": "1.0.2"
     },
-    "sailsGenerator": {
-        "type": "jsonapi",
-        "behavior": "adds `sails generate json-api`",
-        "sailsVersion": "^1.0.0"
+    "sails": {
+        "isHook": true
     }
 }
