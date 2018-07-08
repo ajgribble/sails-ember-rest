@@ -15,7 +15,7 @@ global.JSONAPISerializer = new Serializer({
   unconvertCase: 'camelCase'
 });
 
-// Imported Actions 
+// Imported Actions
 const create = require('./templates/actions/create');
 const destroy = require('./templates/actions/destroy');
 const find = require('./templates/actions/find');
@@ -52,25 +52,24 @@ module.exports = function defineSailsJsonApiHook(sails) {
 
       // Once the ORM has loaded, dynamically register all models in the JSON API Serializer
       sails.on('hook:orm:loaded', function() {
-        Object.keys(sails.models).forEach((modelName) => {
+        Object.keys(sails.models).forEach(modelName => {
           const Model = sails.models[modelName];
           const modelType = kebabCase(Model.globalId);
           const modelPlural = pluralize(modelType);
-          const relationships = Model.associations
-            .reduce((acc, { alias, collection, model, type }) => {
-              return Object.assign({}, acc, {
-                [alias]: {
-                  type: kebabCase(type === 'model' ? model : collection),
-                  links(data) {
-                    const base = sails.helpers.generateResourceLink(modelPlural, data.id);
-                    return {
-                      related: `${base}/${alias}`,
-                      self: `${base}/${alias}`
-                    }
-                  }
+          const relationships = Model.associations.reduce((acc, { alias, collection, model, type }) => {
+            return Object.assign({}, acc, {
+              [alias]: {
+                type: kebabCase(type === 'model' ? model : collection),
+                links(data) {
+                  const base = sails.helpers.generateResourceLink(modelPlural, data.id);
+                  return {
+                    related: `${base}/${alias}`,
+                    self: `${base}/${alias}`
+                  };
                 }
-              });
-            }, {});
+              }
+            });
+          }, {});
 
           JSONAPISerializer.register(modelType, {
             links: {
@@ -86,8 +85,8 @@ module.exports = function defineSailsJsonApiHook(sails) {
               return {
                 self: Array.isArray(data)
                   ? sails.helpers.generateResourceLink(modelPlural)
-                  : sails.helpers.generateResourceLink(modelPlural, data.id) 
-              }
+                  : sails.helpers.generateResourceLink(modelPlural, data.id)
+              };
             }
           });
         });
