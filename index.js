@@ -5,6 +5,14 @@
  * @docs        :: https://sailsjs.com/docs/concepts/extending-sails/hooks
  */
 
+const create = require('./templates/actions/create');
+const destroy = require('./templates/actions/destroy');
+const find = require('./templates/actions/find');
+const findone = require('./templates/actions/findone');
+const hydrate = require('./templates/actions/hydrate');
+const populate = require('./templates/actions/populate');
+const update = require('./templates/actions/update');
+
 module.exports = function defineSailsJsonApiHook(sails) {
 
   return {
@@ -18,10 +26,11 @@ module.exports = function defineSailsJsonApiHook(sails) {
 
       sails.log.info('Initializing custom hook (`sails-json-api`)');
 
-      return done();
+      // Manually register JSON API actions
+      return this.registerActions(done);
     },
     configure() {
-      sails.log.warn('configure')
+      // Make helpers accessible via sails.helper.*
       sails.config.helpers.moduleDefinitions = Object.assign({}, sails.config.helpers.moduleDefinitions, {
         buildJsonApiResponse: require('./templates/helpers/build-json-api-response'),
         countRelationship: require('./templates/helpers/count-relationship'),
@@ -30,6 +39,7 @@ module.exports = function defineSailsJsonApiHook(sails) {
         linkAssociations: require('./templates/helpers/link-associations')
       });
 
+      // Make policies available to the policy configuration used by the policy hook
       // The policy map MUST be all lowercase as Sails' policy hook will make this assumption
       sails.config.policies.moduleDefinitions = Object.assign({}, sails.config.policies.moduleDefinitions, {
         jsonapicreate: require('./templates/policies/jsonApiCreate'),
@@ -42,26 +52,26 @@ module.exports = function defineSailsJsonApiHook(sails) {
         jsonapiupdate: require('./templates/policies/jsonApiUpdate'),
         jsonapivalidateheaders: require('./templates/policies/jsonApiValidateHeaders')
       });
+    },
+    registerActions(done) {
+      sails.registerAction(create, 'sailsJsonApi/create');
+      sails.registerAction(destroy, 'sailsJsonApi/destroy');
+      sails.registerAction(find, 'sailsJsonApi/find');
+      sails.registerAction(findone, 'sailsJsonApi/findone');
+      sails.registerAction(hydrate, 'sailsJsonApi/hydrate');
+      sails.registerAction(populate, 'sailsJsonApi/populate');
+      sails.registerAction(update, 'sailsJsonApi/update');
+
+      return done();
     }
   };
 };
 
-module.exports.actions = {
-  create: require('./templates/actions/create'),
-  destroy: require('./templates/actions/destroy'),
-  find: require('./templates/actions/find'),
-  findone: require('./templates/actions/findone'),
-  hydrate: require('./templates/actions/hydrate'),
-  populate: require('./templates/actions/populate'),
-  update: require('./templates/actions/update')
-};
 module.exports.controllers = {
   JsonApiController: require('./templates/controllers/JsonApiController')
 },
 module.exports.hooks = {
   registerSerializers: require('./templates/hooks/register-serializers')
-};
-module.exports.policies = {
 };
 module.exports.responses = {
   created: require('./templates/responses/created'),
