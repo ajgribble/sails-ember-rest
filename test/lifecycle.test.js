@@ -21,9 +21,7 @@ before(function(done) {
       },
       log: { level: 'warn' },
       policies: {
-        DummyController: {
-          hello: ['jsonApiValidateHeaders']
-        }
+        'dummy/hello': ['jsonApiValidateHeaders']
       },
       routes: {
         'GET /dummy': {

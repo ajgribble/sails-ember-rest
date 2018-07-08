@@ -21,12 +21,26 @@ module.exports = function defineSailsJsonApiHook(sails) {
       return done();
     },
     configure() {
-      sails.config.helpers.moduleDefinitions = Object.assign({}, {
+      sails.log.warn('configure')
+      sails.config.helpers.moduleDefinitions = Object.assign({}, sails.config.helpers.moduleDefinitions, {
         buildJsonApiResponse: require('./templates/helpers/build-json-api-response'),
         countRelationship: require('./templates/helpers/count-relationship'),
         generateResourceLink: require('./templates/helpers/generate-resource-link'),
         getAssociationConfig: require('./templates/helpers/get-association-config'),
         linkAssociations: require('./templates/helpers/link-associations')
+      });
+
+      // The policy map MUST be all lowercase as Sails' policy hook will make this assumption
+      sails.config.policies.moduleDefinitions = Object.assign({}, sails.config.policies.moduleDefinitions, {
+        jsonapicreate: require('./templates/policies/jsonApiCreate'),
+        jsonapidestroy: require('./templates/policies/jsonApiDestroy'),
+        jsonapifind: require('./templates/policies/jsonApiFind'),
+        jsonapifindOne: require('./templates/policies/jsonApiFindOne'),
+        jsonapihydrate: require('./templates/policies/jsonApiHydrate'),
+        jsonapipopulate: require('./templates/policies/jsonApiPopulate'),
+        jsonapisetheader: require('./templates/policies/jsonApiSetHeader'),
+        jsonapiupdate: require('./templates/policies/jsonApiUpdate'),
+        jsonapivalidateheaders: require('./templates/policies/jsonApiValidateHeaders')
       });
     }
   };
@@ -48,15 +62,6 @@ module.exports.hooks = {
   registerSerializers: require('./templates/hooks/register-serializers')
 };
 module.exports.policies = {
-  jsonApiCreate: require('./templates/policies/jsonApiCreate'),
-  jsonApiDestroy: require('./templates/policies/jsonApiDestroy'),
-  jsonApiFind: require('./templates/policies/jsonApiFind'),
-  jsonApiFindOne: require('./templates/policies/jsonApiFindOne'),
-  jsonApiHydrate: require('./templates/policies/jsonApiHydrate'),
-  jsonApiPopulate: require('./templates/policies/jsonApiPopulate'),
-  jsonApiSetHeader: require('./templates/policies/jsonApiSetHeader'),
-  jsonApiUpdate: require('./templates/policies/jsonApiUpdate'),
-  jsonApiValidateHeaders: require('./templates/policies/jsonApiValidateHeaders')
 };
 module.exports.responses = {
   created: require('./templates/responses/created'),
