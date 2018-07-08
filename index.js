@@ -5,6 +5,17 @@
  * @docs        :: https://sailsjs.com/docs/concepts/extending-sails/hooks
  */
 
+const { kebabCase } = require('lodash');
+const pluralize = require('pluralize');
+const Serializer = require('json-api-serializer');
+
+// Link the JSONAPISerializer to the global namespace
+global.JSONAPISerializer = new Serializer({
+  convertCase: 'kebab-case',
+  unconvertCase: 'camelCase'
+});
+
+// Imported Actions 
 const create = require('./templates/actions/create');
 const destroy = require('./templates/actions/destroy');
 const find = require('./templates/actions/find');
@@ -23,8 +34,50 @@ module.exports = function defineSailsJsonApiHook(sails) {
      * @param {Function} done
      */
     initialize(done) {
-
       sails.log.info('Initializing custom hook (`sails-json-api`)');
+
+      // Once the ORM has loaded, dynamically register all models in the JSONAPI Serializer
+      sails.on('hook:orm:loaded', function() {
+        Object.keys(sails.models).forEach((modelName) => {
+          const Model = sails.models[modelName];
+          const modelType = kebabCase(Model.globalId);
+          const modelPlural = pluralize(modelType);
+          const relationships = Model.associations
+            .reduce((acc, { alias, collection, model, type }) => {
+              return Object.assign({}, acc, {
+                [alias]: {
+                  type: kebabCase(type === 'model' ? model : collection),
+                  links(data) {
+                    const base = sails.helpers.generateResourceLink(modelPlural, data.id);
+                    return {
+                      related: `${base}/${alias}`,
+                      self: `${base}/${alias}`
+                    }
+                  }
+                }
+              });
+            }, {});
+
+          JSONAPISerializer.register(modelType, {
+            links: {
+              self(data) {
+                return sails.helpers.generateResourceLink(modelPlural, data.id);
+              }
+            },
+            relationships,
+            topLevelMeta({ total }) {
+              return typeof total !== 'undefined' ? { total } : {};
+            },
+            topLevelLinks(data, extraData) {
+              return {
+                self: Array.isArray(data)
+                  ? sails.helpers.generateResourceLink(modelPlural)
+                  : sails.helpers.generateResourceLink(modelPlural, data.id) 
+              }
+            }
+          });
+        });
+      });
 
       // Manually register JSON API actions
       return this.registerActions(done);
@@ -70,9 +123,6 @@ module.exports = function defineSailsJsonApiHook(sails) {
 module.exports.controllers = {
   JsonApiController: require('./templates/controllers/JsonApiController')
 },
-module.exports.hooks = {
-  registerSerializers: require('./templates/hooks/register-serializers')
-};
 module.exports.responses = {
   created: require('./templates/responses/created'),
   noContent: require('./templates/responses/noContent'),
