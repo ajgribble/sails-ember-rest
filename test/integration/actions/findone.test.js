@@ -69,11 +69,17 @@ describe('Integration | Action | findone', function() {
           expect(attributes['created-at']).to.exist;
 
           expect(relationships.author.data.type).to.equal('author');
-          expect(relationships.author.links.self).to.equal('http://localhost:1337/articles/1/author');
-          expect(relationships.author.links.related).to.equal('http://localhost:1337/articles/1/author');
+          expect(relationships.author.links.self).to.not.exist;
+          expect(relationships.author.links.related).to.be.an.instanceof(Object);
+          expect(relationships.author.links.related.href).to.equal('http://localhost:1337/articles/1/author');
+          expect(relationships.author.links.related.meta).to.be.an.instanceof(Object);
+          expect(relationships.author.links.related.meta.count).to.equal(1);
 
-          expect(relationships.comments.links.self).to.equal('http://localhost:1337/articles/1/comments');
-          expect(relationships.comments.links.related).to.equal('http://localhost:1337/articles/1/comments');
+          expect(relationships.comments.links.self).to.not.exist;
+          expect(relationships.comments.links.related).to.be.an.instanceof(Object);
+          expect(relationships.comments.links.related.href).to.equal('http://localhost:1337/articles/1/comments');
+          expect(relationships.comments.links.related.meta).to.be.an.instanceof(Object);
+          expect(relationships.comments.links.related.meta.count).to.equal(3);
 
           expect(attributes.createdAt).to.not.exist;
           expect(attributes.author).to.not.exist;

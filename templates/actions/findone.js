@@ -30,21 +30,38 @@ module.exports = function(interrupts = {}) {
 
     parallel(
       {
-        matchingRecord: done => {
+        matchingRecord: (done) => {
           actionUtil
             .populateRecords(query, associations)
             .where(actionUtil.parseCriteria(req))
             .exec(done);
         },
+        meta: (done) => {
+          parallel(associations.reduce((acc, association) => {
+            return Object.assign({}, acc, {
+              [association.alias]: cb => sails.helpers.countRelationship
+                .with({ model: Model, association, pk })
+                .then(result => cb(null, result) )
+            })
+          }, {}), (err, result) => {
+            if (err) {
+              return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
+            }
+            done(null, { relationships: { count: result }})
+          });
+        }
+        // TODO: Is this still necessary? 
+        /*
         associated: done => {
           actionUtil.populateIndexes(Model, pk, associations, done);
         }
+        */
       },
       (err, results) => {
         if (err) {
           return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
         }
-        const { matchingRecord, associated } = results;
+        const { matchingRecord, meta /*, associated */ } = results;
 
         if (!matchingRecord) {
           return res.notFound('No record found with the specified ' + Model.primaryKey + '.');
@@ -60,7 +77,7 @@ module.exports = function(interrupts = {}) {
             }
 
             res.ok(
-              sails.helpers.buildJsonApiResponse.with({ model: Model, records: matchingRecord }),
+              sails.helpers.buildJsonApiResponse.with({ model: Model, records: matchingRecord, meta }),
               actionUtil.parseLocals(req)
             );
           },

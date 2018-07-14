@@ -73,8 +73,12 @@ module.exports = function(interrupts = {}) {
         cb => {
           parallel(
             {
-              count: sails.helpers.countRelationship.with({ model: Model, association, pk: parentPk }),
-              records: done => {
+              count: (done) => (
+                sails.helpers.countRelationship
+                  .with({ model: Model, association, pk: parentPk })
+                  .then(result => done(null, result))
+              ),
+              records: (done) => (
                 Model.findOne(parentPk)
                   .populate(relation, populateOptions)
                   .exec((err, matchingRecord) => {
@@ -88,8 +92,8 @@ module.exports = function(interrupts = {}) {
                       return done(new Error(`Specified record (${parentPk}) is missing relation ${relation}`));
                     }
                     done(null, { parent: matchingRecord, children: matchingRecord[relation] });
-                  });
-              }
+                  })
+              )
             },
             (err, results) => {
               if (err) {
