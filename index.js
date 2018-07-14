@@ -61,9 +61,10 @@ module.exports = function defineSailsJsonApiHook(sails) {
             return Object.assign({}, acc, {
               [alias]: {
                 type: kebabCase(type === 'model' ? model : collection),
-                links(data, extraData = {}) {
+                links(data, { relationships = {} }) {
                   const base = sails.helpers.generateResourceLink(modelPlural, data.id);
-                  const count = extraData && extraData.relationships && extraData.relationships.count && extraData.relationships.count[alias] ? extraData.relationships.count[alias] : '';
+                  const countObj = relationships && relationships.count ? relationships.count : {};
+                  const count = countObj[alias] || (countObj[data.id] && countObj[data.id][alias] ? countObj[data.id][alias] : '');
                   return {
                     related: {
                       href: `${base}/${alias}`,

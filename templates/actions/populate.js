@@ -26,7 +26,8 @@ module.exports = function(interrupts = {}) {
     const association = find(req.options.associations, {
       alias: relation
     });
-    const relationIdentity = association.type === 'model' ? association.model : association.collection;
+    const isSingularAssociation  = association.type === 'model';
+    const relationIdentity = isSingularAssociation ? association.model : association.collection;
     const RelatedModel = req._sails.models[relationIdentity];
     // Allow customizable blacklist for params.
     req.options.criteria = req.options.criteria || {};
@@ -78,10 +79,12 @@ module.exports = function(interrupts = {}) {
                   .with({ model: Model, association, pk: parentPk })
                   .then(result => done(null, result))
               ),
-              records: (done) => (
-                Model.findOne(parentPk)
-                  .populate(relation, populateOptions)
-                  .exec((err, matchingRecord) => {
+              records: (done) => {
+                const query = isSingularAssociation
+                  ? Model.findOne(parentPk).populate(relation)
+                  : Model.findOne(parentPk).populate(relation, populateOptions);
+
+                  query.exec((err, matchingRecord) => {
                     if (err) {
                       return done(err);
                     }
@@ -91,9 +94,9 @@ module.exports = function(interrupts = {}) {
                     if (!matchingRecord[relation]) {
                       return done(new Error(`Specified record (${parentPk}) is missing relation ${relation}`));
                     }
-                    done(null, { parent: matchingRecord, children: matchingRecord[relation] });
+                    done(null, { parent: matchingRecord, children: isSingularAssociation ? [matchingRecord[relation]] : matchingRecord[relation] });
                   })
-              )
+              }
             },
             (err, results) => {
               if (err) {
@@ -122,6 +125,26 @@ module.exports = function(interrupts = {}) {
             }
             cb(null, Object.assign({}, results, { records: { parent, children: populatedResults } }));
           });
+        },
+        (results, cb) => {
+          const { children } = results.records;
+          parallel(children.reduce((acc, child) => {
+            const childId = child[RelatedModel.primaryKey];
+            acc[childId] = (next) => parallel(RelatedModel.associations.reduce((acc2, assoc) => {
+              return Object.assign({}, acc2, {
+                [assoc.alias]: (done) => sails.helpers.countRelationship
+                  .with({ model: RelatedModel, association: assoc, pk: childId })
+                  .then(result => done(null, result))
+              });
+            }, {}), next);
+
+            return acc;
+          }, {}), (err, result) => {
+            if (err) {
+              return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
+            }
+            cb(null, Object.assign({}, results, { meta: { relationships: { count: result }}}))
+          }); 
         }
       ],
       (err, results) => {
@@ -147,7 +170,7 @@ module.exports = function(interrupts = {}) {
               sails.helpers.buildJsonApiResponse.with({
                 model: RelatedModel,
                 records: sails.helpers.linkAssociations(RelatedModel, children),
-                meta: { total: results.count }
+                meta: Object.assign(results.meta || {}, { total: results.count })
               }),
               actionUtil.parseLocals(req)
             );
