@@ -65,12 +65,20 @@ describe('Integration | Action | find', function() {
       supertest(sails.hooks.http.app)
         .get('/articles')
         .expect(res => {
-          expect(res.body.data).to.have.lengthOf(2);
-          expect(res.body.data[0].id).to.equal('1');
-          expect(res.body.data[0].type).to.equal('article');
-          expect(res.body.data[0].attributes.title).to.include('XML');
-          expect(res.body.data[0].attributes['created-at']).to.exist;
-          expect(res.body.data[0].attributes['createdAt']).to.not.exist;
+          const { data, meta } = res.body;
+          const focusDoc = data[0];
+
+          expect(data).to.have.lengthOf(2);
+          expect(focusDoc.id).to.equal('1');
+          expect(focusDoc.type).to.equal('article');
+          expect(focusDoc.attributes.title).to.include('XML');
+          expect(focusDoc.attributes['created-at']).to.exist;
+          expect(focusDoc.attributes['createdAt']).to.not.exist;
+
+          expect(focusDoc.relationships).to.exist;
+          expect(Object.keys(focusDoc.relationships).length).to.equal(2);
+          expect(focusDoc.relationships.author.links.related.href).to.equal(`http://localhost:1337/articles/${focusDoc.id}/author`);
+          expect(focusDoc.relationships.author.links.related.meta.count).to.equal(1);
         })
         .end(done);
     });

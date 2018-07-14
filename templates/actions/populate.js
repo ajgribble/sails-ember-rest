@@ -9,9 +9,8 @@
 const actionUtil = require('./../util/actionUtil');
 const shimFunction = require('./../util/shimFunction');
 const defaultInterrupt = require('./../interrupts/defaultInterrupt');
-const pluralize = require('pluralize');
 const { parallel, waterfall } = require('async');
-const { camelCase, find } = require('lodash');
+const { find } = require('lodash');
 
 module.exports = function(interrupts = {}) {
   interrupts = shimFunction(interrupts, 'populate');
