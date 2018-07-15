@@ -10,14 +10,14 @@ const actionUtil = require('./../util/actionUtil');
 const shimFunction = require('./../util/shimFunction');
 const defaultInterrupt = require('./../interrupts/defaultInterrupt');
 const { parallel, waterfall } = require('async');
-const { map } = require('lodash');
+const { flatten, map } = require('lodash');
 
 module.exports = function(interrupts = {}) {
   interrupts = shimFunction(interrupts, 'find');
   interrupts.find = interrupts.find ? interrupts.find : defaultInterrupt;
 
   return function(req, res) {
-    // Set the JSONAPI required header
+    // Set the JSON API required header
     res.set('Content-Type', 'application/vnd.api+json');
 
     // Look up the model
@@ -28,7 +28,17 @@ module.exports = function(interrupts = {}) {
 
     // Look up the association configuration based on the reserved 'include' keyword
     const { include = '' } = criteria;
-    const associations = sails.helpers.getAssociationConfig.with({ model: Model, include: include.split(',') });
+    const toInclude = include.split(',');
+    const associations = sails.helpers.getAssociationConfig.with({ model: Model, include: toInclude });
+
+    const includedModels = toInclude.map((alias) => {
+      const assoc = req.options.associations.filter(a => a.alias === alias)[0];
+      const relationIdentity = assoc.type === 'model' ? assoc.model : assoc.collection;
+
+      return { alias: assoc.alias, model: req._sails.models[relationIdentity] };
+    });
+    const includedAssociations = includedModels.map(IM => sails.helpers.getAssociationConfig.with({ model: IM.model }));
+
     delete criteria.include; // Include is no longer required
 
     waterfall([
@@ -59,6 +69,42 @@ module.exports = function(interrupts = {}) {
       ),
       (results, cb) => {
         const { records } = results;
+        parallel(Object.assign({},
+          associations.reduce((acc, assoc) => {
+            acc[assoc.alias] = (next) => parallel(records.reduce((acc2, record) => {
+              const recordId = record[Model.primaryKey];
+              return Object.assign({}, acc2, {
+                [recordId]: (done) => sails.helpers.countRelationship
+                  .with({ model: Model, association: assoc, pk: recordId })
+                  .then(result => done(null, result))
+              })
+            }, {}), next);
+            return acc;
+          }, {}),
+          includedAssociations.reduce((acc, assocs, index) => {
+            const IncludedModel = includedModels[index];
+            assocs.forEach((assoc) => {
+              acc[assoc.alias] = (next) => parallel(records.reduce((acc2, record) => {
+                const recordId = record[IncludedModel.alias] ? record[IncludedModel.alias][IncludedModel.model.primaryKey] : null;
+                if (!recordId) return acc2;
+
+                return Object.assign({}, acc2, {
+                  [recordId]: (done) => sails.helpers.countRelationship
+                    .with({ model: IncludedModel.model, association: assoc, pk: recordId })
+                    .then(result => done(null, result))
+                })
+              }, {}), next);
+            });
+
+            return acc;
+          }, {})
+        ), (err, result) => {
+          if (err) {
+            return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
+          }
+          cb(null, Object.assign({}, results, { meta: { relationships: { count: result }}}))
+        });
+        /*
         parallel(records.reduce((acc, record) => {
           const recordId = record[Model.primaryKey];
           acc[recordId] = (next) => parallel(Model.associations.reduce((acc2, assoc) => {
@@ -75,7 +121,7 @@ module.exports = function(interrupts = {}) {
             return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
           }
           cb(null, Object.assign({}, results, { meta: { relationships: { count: result }}}))
-        }); 
+        });*/
       }],
       (err, results) => {
         if (err) {

@@ -56,15 +56,17 @@ module.exports = function defineSailsJsonApiHook(sails) {
           const Model = sails.models[modelName];
           const modelType = kebabCase(Model.globalId);
           const modelPlural = pluralize(modelType);
-          const relationships = Model.associations.reduce((acc, { alias, collection, model, type }) => {
+          const associations = Model.associations.reduce((acc, { alias, collection, model, type }) => {
             // TODO: Implement 'self' link on relationship which allows direct manipulation
             return Object.assign({}, acc, {
               [alias]: {
                 type: kebabCase(type === 'model' ? model : collection),
                 links(data, { relationships = {} }) {
-                  const base = sails.helpers.generateResourceLink(modelPlural, data.id);
+                  const dataId = `${data.id}`;
+                  const base = sails.helpers.generateResourceLink(modelPlural, dataId);
                   const countObj = relationships && relationships.count ? relationships.count : {};
-                  const count = countObj[alias] || (countObj[data.id] && countObj[data.id][alias] ? countObj[data.id][alias] : '');
+                  const count = countObj[alias] && countObj[alias][dataId] ? countObj[alias][dataId] : 0;
+
                   return {
                     related: {
                       href: `${base}/${alias}`,
@@ -84,7 +86,7 @@ module.exports = function defineSailsJsonApiHook(sails) {
                 return sails.helpers.generateResourceLink(modelPlural, data.id);
               }
             },
-            relationships,
+            relationships: associations,
             topLevelMeta({ total }) {
               return typeof total !== 'undefined' ? { total } : {};
             },
