@@ -9,7 +9,7 @@
 const actionUtil = require('./../util/actionUtil');
 const shimFunction = require('./../util/shimFunction');
 const defaultInterrupt = require('./../interrupts/defaultInterrupt');
-const { parallel } = require('async');
+const { parallel, waterfall } = require('async');
 
 module.exports = function(interrupts = {}) {
   interrupts = shimFunction(interrupts, 'findone');
@@ -28,40 +28,39 @@ module.exports = function(interrupts = {}) {
     const associations = sails.helpers.getAssociationConfig.with({ model: Model, include: include.split(',') });
     delete req.query.include; // Include is no longer required
 
-    parallel(
-      {
-        matchingRecord: (done) => {
-          actionUtil
-            .populateRecords(query, associations)
-            .where(actionUtil.parseCriteria(req))
-            .exec(done);
-        },
-        meta: (done) => {
-          parallel(associations.reduce((acc, association) => {
-            return Object.assign({}, acc, {
-              [association.alias]: cb => sails.helpers.countRelationship
-                .with({ model: Model, association, pk })
-                .then(result => cb(null, result) )
-            })
-          }, {}), (err, result) => {
-            if (err) {
-              return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
-            }
-            done(null, { relationships: { count: result }})
-          });
-        }
-        // TODO: Is this still necessary? 
-        /*
-        associated: done => {
-          actionUtil.populateIndexes(Model, pk, associations, done);
-        }
-        */
+    waterfall([
+      (cb) => {
+        actionUtil
+          .populateRecords(query, associations)
+          .where(actionUtil.parseCriteria(req))
+          .exec(cb);
       },
+      (record, cb) => {
+        if (!cb) return record(null, { matchingRecord: null });
+
+        parallel(Object.assign({},
+          associations.reduce((acc, association) => {
+            return Object.assign({}, acc, {
+              [association.alias]: done => {
+                const recordId = record[Model.primaryKey];
+                sails.helpers.countRelationship
+                  .with({ model: Model, association, pk })
+                  .then(result => done(null, { [recordId]: result }) )
+              }
+            })
+          }, {}),
+        ), (err, result) => {
+          if (err) {
+            return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
+          }
+          cb(null, Object.assign({}, { matchingRecord: record }, { meta: {relationships: { count: result }}}))
+        });
+      }],
       (err, results) => {
         if (err) {
           return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
         }
-        const { matchingRecord, meta /*, associated */ } = results;
+        const { matchingRecord, meta } = results;
 
         if (!matchingRecord) {
           return res.notFound('No record found with the specified ' + Model.primaryKey + '.');

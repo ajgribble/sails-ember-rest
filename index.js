@@ -66,7 +66,6 @@ module.exports = function defineSailsJsonApiHook(sails) {
                   const base = sails.helpers.generateResourceLink(modelPlural, dataId);
                   const countObj = relationships && relationships.count ? relationships.count : {};
                   const count = countObj[alias] && countObj[alias][dataId] ? countObj[alias][dataId] : 0;
-
                   return {
                     related: {
                       href: `${base}/${alias}`,

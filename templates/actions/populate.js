@@ -127,11 +127,11 @@ module.exports = function(interrupts = {}) {
         },
         (results, cb) => {
           const { children } = results.records;
-          parallel(children.reduce((acc, child) => {
-            const childId = child[RelatedModel.primaryKey];
-            acc[childId] = (next) => parallel(RelatedModel.associations.reduce((acc2, assoc) => {
+          parallel(RelatedModel.associations.reduce((acc, assoc) => {
+            acc[assoc.alias] = (next) => parallel(children.reduce((acc2, child) => {
+              const childId = child[RelatedModel.primaryKey];
               return Object.assign({}, acc2, {
-                [assoc.alias]: (done) => sails.helpers.countRelationship
+                [childId]: (done) => sails.helpers.countRelationship
                   .with({ model: RelatedModel, association: assoc, pk: childId })
                   .then(result => done(null, result))
               });
