@@ -30,7 +30,7 @@ module.exports = function(interrupts = {}) {
     const include = req.param('include');
     const toInclude = include ? include.split(',') : [];
     const associations = sails.helpers.getAssociationConfig.with({ model: Model, include: toInclude });
-    const includedModels = toInclude.map((alias) => {
+    const includedModels = toInclude.map(alias => {
       const assoc = req.options.associations.filter(a => a.alias === alias)[0];
       const relationIdentity = assoc.type === 'model' ? assoc.model : assoc.collection;
 
@@ -40,83 +40,106 @@ module.exports = function(interrupts = {}) {
 
     delete criteria.include; // Include is no longer required
 
-    waterfall([
-      (cb) => parallel(
-        {
-          count(done) {
-            Model.count(criteria).exec(done);
-          },
-          records(done) {
-            // Lookup for records that match the specified criteria
-            const query = Model.find()
-              .where(criteria)
-              .skip(actionUtil.parseSkip(req))
-              .sort(actionUtil.parseSort(req));
-            if (limit) query.limit(limit);
+    waterfall(
+      [
+        cb =>
+          parallel(
+            {
+              count(done) {
+                Model.count(criteria).exec(done);
+              },
+              records(done) {
+                // Lookup for records that match the specified criteria
+                const query = Model.find()
+                  .where(criteria)
+                  .skip(actionUtil.parseSkip(req))
+                  .sort(actionUtil.parseSort(req));
+                if (limit) query.limit(limit);
 
-            // populate associations according to our model specific configuration...
-            actionUtil.populateRecords(query, associations).exec(done);
-          }
-        },
-        (err, results) => {
-          if (err) {
-            return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
-          }
+                // populate associations according to our model specific configuration...
+                actionUtil.populateRecords(query, associations).exec(done);
+              }
+            },
+            (err, results) => {
+              if (err) {
+                return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
+              }
 
-          cb(null, results);
+              cb(null, results);
+            }
+          ),
+        (results, cb) => {
+          const { records } = results;
+          parallel(
+            Object.assign(
+              {},
+              associations.reduce((acc, assoc) => {
+                acc[assoc.alias] = next =>
+                  parallel(
+                    records.reduce((acc2, record) => {
+                      const recordId = record[Model.primaryKey];
+                      return Object.assign({}, acc2, {
+                        [recordId]: done =>
+                          sails.helpers.countRelationship
+                            .with({ model: Model, association: assoc, pk: recordId })
+                            .then(result => done(null, result))
+                      });
+                    }, {}),
+                    next
+                  );
+                return acc;
+              }, {}),
+              includedAssociations.reduce((acc, assocs, index) => {
+                const IncludedModel = includedModels[index];
+                assocs.forEach(assoc => {
+                  acc[assoc.alias] = next =>
+                    parallel(
+                      records.reduce((acc2, record) => {
+                        const assocRecords = record[IncludedModel.alias];
+                        if (Array.isArray(assocRecords)) {
+                          return Object.assign(
+                            {},
+                            acc2,
+                            assocRecords.reduce((acc3, assocRecord) => {
+                              const recordId = assocRecord[IncludedModel.model.primaryKey];
+
+                              acc3[recordId] = done =>
+                                sails.helpers.countRelationship
+                                  .with({ model: IncludedModel.model, association: assoc, pk: recordId })
+                                  .then(result => done(null, result));
+
+                              return acc3;
+                            }, {})
+                          );
+                        } else {
+                          const recordId =
+                            typeof assocRecords === 'object' ? assocRecords[IncludedModel.model.primaryKey] : null;
+                          if (!recordId) return acc2;
+
+                          return Object.assign({}, acc2, {
+                            [recordId]: done =>
+                              sails.helpers.countRelationship
+                                .with({ model: IncludedModel.model, association: assoc, pk: recordId })
+                                .then(result => done(null, result))
+                          });
+                        }
+                      }, {}),
+                      next
+                    );
+                });
+
+                return acc;
+              }, {})
+            ),
+            (err, result) => {
+              if (err) {
+                return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
+              }
+              cb(null, Object.assign({}, results, { meta: { relationships: { count: result } } }));
+            }
+          );
         }
-      ),
-      (results, cb) => {
-        const { records } = results;
-        parallel(Object.assign({},
-          associations.reduce((acc, assoc) => {
-            acc[assoc.alias] = (next) => parallel(records.reduce((acc2, record) => {
-              const recordId = record[Model.primaryKey];
-              return Object.assign({}, acc2, {
-                [recordId]: (done) => sails.helpers.countRelationship
-                  .with({ model: Model, association: assoc, pk: recordId })
-                  .then(result => done(null, result))
-              })
-            }, {}), next);
-            return acc;
-          }, {}),
-          includedAssociations.reduce((acc, assocs, index) => {
-            const IncludedModel = includedModels[index];
-            assocs.forEach((assoc) => {
-              acc[assoc.alias] = (next) => parallel(records.reduce((acc2, record) => {
-                const assocRecords = record[IncludedModel.alias];
-                if (Array.isArray(assocRecords)) {
-                  return Object.assign({}, acc2, assocRecords.reduce((acc3, assocRecord) => {
-                    const recordId = assocRecord[IncludedModel.model.primaryKey];
-
-                    acc3[recordId] = (done) => sails.helpers.countRelationship
-                      .with({ model: IncludedModel.model, association: assoc, pk: recordId })
-                      .then(result => done(null, result))
-
-                    return acc3;
-                  }, {}));
-                } else {
-                  const recordId = typeof assocRecords === 'object' ? assocRecords[IncludedModel.model.primaryKey] : null;
-                  if (!recordId) return acc2;
-
-                  return Object.assign({}, acc2, {
-                    [recordId]: (done) => sails.helpers.countRelationship
-                      .with({ model: IncludedModel.model, association: assoc, pk: recordId })
-                      .then(result => done(null, result))
-                  })
-                }
-              }, {}), next);
-            });
-
-            return acc;
-          }, {})
-        ), (err, result) => {
-          if (err) {
-            return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));
-          }
-          cb(null, Object.assign({}, results, { meta: { relationships: { count: result }}}))
-        });
-      }],
+      ],
       (err, results) => {
         if (err) {
           return actionUtil.negotiate(res, err, actionUtil.parseLocals(req));

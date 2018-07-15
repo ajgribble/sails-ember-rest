@@ -63,7 +63,9 @@ describe('Integration | Action | populate', function() {
 
           expect(focusDoc.relationships).to.exist;
           expect(Object.keys(focusDoc.relationships).length).to.equal(2);
-          expect(focusDoc.relationships.author.links.related.href).to.equal(`http://localhost:1337/comments/${focusDoc.id}/author`);
+          expect(focusDoc.relationships.author.links.related.href).to.equal(
+            `http://localhost:1337/comments/${focusDoc.id}/author`
+          );
           expect(focusDoc.relationships.author.links.related.meta.count).to.equal(1);
         })
         .end(done);
@@ -85,10 +87,12 @@ describe('Integration | Action | populate', function() {
 
           expect(focusDoc.relationships).to.exist;
           expect(Object.keys(focusDoc.relationships).length).to.equal(2);
-          expect(focusDoc.relationships.comments.links.related.href).to.equal(`http://localhost:1337/authors/${focusDoc.id}/comments`);
+          expect(focusDoc.relationships.comments.links.related.href).to.equal(
+            `http://localhost:1337/authors/${focusDoc.id}/comments`
+          );
           expect(focusDoc.relationships.comments.links.related.meta.count).to.equal(2);
         })
-        .end(done)
+        .end(done);
     });
   });
 
