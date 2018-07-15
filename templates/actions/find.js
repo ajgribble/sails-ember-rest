@@ -27,7 +27,7 @@ module.exports = function(interrupts = {}) {
     const limit = actionUtil.parseLimit(req);
 
     // Look up the association configuration based on the reserved 'include' keyword
-    const { include } = criteria;
+    const include = req.param('include');
     const toInclude = include ? include.split(',') : [];
     const associations = sails.helpers.getAssociationConfig.with({ model: Model, include: toInclude });
     const includedModels = toInclude.map((alias) => {
