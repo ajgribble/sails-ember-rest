@@ -126,6 +126,16 @@ module.exports = function defineSailsJsonApiHook(sails) {
         jsonapiupdate: require('./templates/policies/jsonApiUpdate'),
         jsonapivalidateheaders: require('./templates/policies/jsonApiValidateHeaders')
       });
+
+      // Once the Response hook has loaded, create new JSON API responses and decorate the built-in responses
+      sails.on('hook:responses:loaded', () => {
+       // Add custom responses without overwriting user supplied
+       // TODO: Adding custom responses here could be dangerous in future versions, look for a more universal path
+       sails.hooks.responses.middleware.created = sails.hooks.responses.middleware.created || this.responses.created;
+       sails.hooks.responses.middleware.noContent = sails.hooks.responses.middleware.noContent || this.responses.noContent;
+       sails.hooks.responses.middleware.notAcceptable = sails.hooks.responses.middleware.notAcceptable || this.responses.notAcceptable;
+       sails.hooks.responses.middleware.unsupportedMediaType = sails.hooks.responses.middleware.unsupportedMediaType || this.responses.unsupportedMediaType;
+      });
     },
     registerActions(done) {
       sails.registerAction(create, 'sailsJsonApi/create');
