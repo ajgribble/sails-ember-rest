@@ -17,7 +17,7 @@ module.exports = {
 
   exits: {},
 
-  fn: function ({ err, title }, exits) {
+  fn: function({ err, title }, exits) {
     let errors;
 
     if (Array.isArray(err)) {
@@ -33,4 +33,3 @@ module.exports = {
     return exits.success({ errors });
   }
 };
-
