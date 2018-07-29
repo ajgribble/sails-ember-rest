@@ -30,11 +30,14 @@ module.exports = function badRequestJsonApi(optionalData) {
   const res = this.res;
   const statusCodeToSet = 400;
   const title = 'Bad Request';
+ 
+  // Set the content-type header
+  res.setHeader('Content-Type', 'application/vnd.api+json');
 
   // If no data was provided, use res.sendStatus().
   if (optionalData === undefined) {
     sails.log.info('Ran custom response: res.badRequestJsonApi()');
-    return res.sendStatus(statusCodeToSet).send({ errors: [{ title }]});
+    return res.status(statusCodeToSet).send({ errors: [{ title }]});
   }
   // Else if the provided data is an Error instance, if it has
   // a toJSON() function, then always run it and use it as the

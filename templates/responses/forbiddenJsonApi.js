@@ -34,7 +34,7 @@ module.exports = function forbiddenJsonApi(optionalData) {
   // If no data was provided, use res.sendStatus().
   if (optionalData === undefined) {
     sails.log.info('Ran custom response: res.forbiddenJsonApi()');
-    return res.sendStatus(statusCodeToSet).send({ errors: [{ title }]});
+    return res.status(statusCodeToSet).send({ errors: [{ title }]});
   }
   // Else if the provided data is an Error instance, if it has
   // a toJSON() function, then always run it and use it as the
