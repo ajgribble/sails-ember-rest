@@ -5,7 +5,7 @@
  * @docs        :: https://sailsjs.com/docs/concepts/extending-sails/hooks
  */
 
-const { isError, isFunction, kebabCase } = require('lodash');
+const { kebabCase } = require('lodash');
 const pluralize = require('pluralize');
 const Serializer = require('json-api-serializer');
 
@@ -123,14 +123,6 @@ module.exports = function defineSailsJsonApiHook(sails) {
       // Make policies available to the policy configuration used by the policy hook
       // The policy map MUST be all lowercase as Sails' policy hook will make this assumption
       sails.config.policies.moduleDefinitions = Object.assign({}, sails.config.policies.moduleDefinitions, {
-        jsonapicreate: require('./templates/policies/jsonApiCreate'),
-        jsonapidestroy: require('./templates/policies/jsonApiDestroy'),
-        jsonapifind: require('./templates/policies/jsonApiFind'),
-        jsonapifindOne: require('./templates/policies/jsonApiFindOne'),
-        jsonapihydrate: require('./templates/policies/jsonApiHydrate'),
-        jsonapipopulate: require('./templates/policies/jsonApiPopulate'),
-        jsonapisetheader: require('./templates/policies/jsonApiSetHeader'),
-        jsonapiupdate: require('./templates/policies/jsonApiUpdate'),
         jsonapivalidateheaders: require('./templates/policies/jsonApiValidateHeaders')
       });
 
