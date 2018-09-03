@@ -117,6 +117,7 @@ module.exports = function defineSailsJsonApiHook(sails) {
         jsonifyError: require('./lib/helpers/jsonify-error'),
         linkAssociations: require('./lib/helpers/link-associations'),
         negotiate: require('./lib/helpers/negotiate'),
+        parseInclude: require('./lib/helpers/parse-include'),
         populateRecords: require('./lib/helpers/populate-records')
       });
 

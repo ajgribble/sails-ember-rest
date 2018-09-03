@@ -1,6 +1,6 @@
 import supertest from 'supertest';
 
-describe('Integration | Action | findone', function() {
+describe.only('Integration | Action | findone', function() {
   describe(':: response format', function() {
     it('should respond with status code 200', function(done) {
       supertest(sails.hooks.http.app)
