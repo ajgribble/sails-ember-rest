@@ -5,9 +5,9 @@
     "main": "index.js",
     "scripts": {
         "start": "node app.js",
-        "test": "node ./node_modules/mocha/bin/mocha test/lifecycle.test.js test/integration/**/*.test.js",
+        "test": "node ./node_modules/mocha/bin/mocha test/lifecycle.test.js test/integration/**/*.test.js --require @babel/register",
         "format": "node ./node_modules/.bin/prettier --single-quote --tab-width 2 --print-width 120 --trailing-comma none --write \"{{api,bin,config,test,lib}/**/*.js,index.js,app.js}\"",
-        "cover": "nyc ./node_modules/mocha/bin/mocha test/lifecycle.test.js test/integration/**/*.test.js"
+        "cover": "nyc ./node_modules/mocha/bin/mocha test/lifecycle.test.js test/integration/**/*.test.js --require @babel/register"
     },
     "keywords": [
         "json-api",
@@ -36,11 +36,11 @@
         "pluralize": "7.0.0"
     },
     "devDependencies": {
+        "@babel/core": "^7.4.4",
+        "@babel/preset-env": "^7.4.4",
+        "@babel/register": "^7.4.4",
         "async": "2.6.2",
-        "babel": "6.23.0",
         "babel-plugin-add-module-exports": "1.0.2",
-        "babel-preset-es2015": "6.24.1",
-        "babel-register": "6.26.0",
         "chai": "4.2.0",
         "mocha": "6.1.4",
         "nyc": "14.1.0",
