@@ -31,8 +31,8 @@
         "node": ">=6.0.0"
     },
     "dependencies": {
-        "json-api-serializer": "1.13.0",
-        "lodash": "4.17.10",
+        "json-api-serializer": "1.15.1",
+        "lodash": "4.17.11",
         "pluralize": "7.0.0"
     },
     "devDependencies": {
@@ -47,10 +47,10 @@
         "prettier": "1.17.0",
         "sails": "1.0.2",
         "sails-disk": "1.0.1",
-        "sails-hook-orm": "2.1.0",
-        "sails-hook-sockets": "1.5.3",
+        "sails-hook-orm": "2.1.1",
+        "sails-hook-sockets": "1.5.5",
         "supertest": "4.0.2",
-        "waterline": "0.13.5"
+        "waterline": "0.13.6"
     },
     "sails": {
         "isHook": true
