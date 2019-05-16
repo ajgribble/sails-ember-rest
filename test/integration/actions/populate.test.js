@@ -100,7 +100,7 @@ describe('Integration | Action | populate', function() {
           expect(focusDoc.attributes.createdAt).to.not.exist;
 
           expect(focusDoc.relationships).to.exist;
-          expect(Object.keys(focusDoc.relationships).length).to.equal(2);
+          expect(Object.keys(focusDoc.relationships).length).to.equal(3);
           expect(focusDoc.relationships.comments.links.related.href).to.equal(
             `http://localhost:1337/authors/${focusDoc.id}/comments`
           );

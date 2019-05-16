@@ -2,6 +2,7 @@ import { waterfall } from 'async';
 import Articles from './../fixtures/Article';
 import Authors from './../fixtures/Author';
 import Comments from './../fixtures/Comment';
+import Publishers from './../fixtures/Publisher';
 
 export default function(sails, done) {
   waterfall(

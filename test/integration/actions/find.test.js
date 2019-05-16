@@ -308,7 +308,7 @@ describe('Integration | Action | find', function() {
         })
         .end(done);
     });
-    it('should support the include query param with with additional params', function(done) {
+    it('should support the include query param with additional params', function(done) {
       supertest(sails.hooks.http.app)
         .get('/articles?include=author&title[contains]=XML')
         .expect(res => {
@@ -319,7 +319,7 @@ describe('Integration | Action | find', function() {
           expect(focusDoc.type).to.equal('author');
           expect(focusDoc.id).to.equal('1');
           expect(focusDoc.relationships).to.exist;
-          expect(Object.keys(focusDoc.relationships).length).to.equal(2);
+          expect(Object.keys(focusDoc.relationships).length).to.equal(3);
 
           expect(focusDoc.relationships.articles.links.related.href).to.equal(
             `http://localhost:1337/authors/${focusDoc.id}/articles`
