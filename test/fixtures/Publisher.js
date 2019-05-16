@@ -4,7 +4,7 @@ export default [
     authors: ['2', '3']
   },
   {
-    name: 'Books n\' Stuff',
+    name: "Books n' Stuff",
     authors: ['1', '3']
   }
-]
+];

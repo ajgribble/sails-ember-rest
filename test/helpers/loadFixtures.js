@@ -25,7 +25,7 @@ export default function(sails, done) {
       done => {
         sails.models.publisher.createEach(Publishers).exec(() => {
           done();
-        })
+        });
       }
     ],
     done

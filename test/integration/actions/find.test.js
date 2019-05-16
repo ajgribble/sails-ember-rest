@@ -348,7 +348,9 @@ describe('Integration | Action | find', function() {
     });
     it('should support the fields query param in conjunction with the include query param', function(done) {
       supertest(sails.hooks.http.app)
-        .get('/authors?include=articles,publishers&fields[authors]=name&fields[articles]=&fields[publishers]=name,updatedAt')
+        .get(
+          '/authors?include=articles,publishers&fields[authors]=name&fields[articles]=&fields[publishers]=name,updatedAt'
+        )
         .expect(200)
         .expect(res => {
           const { data, included } = res.body;
@@ -359,7 +361,7 @@ describe('Integration | Action | find', function() {
           });
 
           // Expect only articles and publishers for relationships
-          expect(included.filter((record) => ['article', 'publisher'].indexOf(record.type) < 0).length).to.equal(0);
+          expect(included.filter(record => ['article', 'publisher'].indexOf(record.type) < 0).length).to.equal(0);
 
           included.forEach(record => {
             if (record.type === 'article') {
