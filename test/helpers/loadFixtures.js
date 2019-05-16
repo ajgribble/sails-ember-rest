@@ -21,6 +21,11 @@ export default function(sails, done) {
         sails.models.comment.createEach(Comments).exec(() => {
           done();
         });
+      },
+      done => {
+        sails.models.publisher.createEach(Publishers).exec(() => {
+          done();
+        })
       }
     ],
     done
