@@ -2,7 +2,7 @@
 
 Developed with the goal of seamlessly integrating [Ember.js](https://www.emberjs.com/) front-end applications with [SailsJS](https://sailsjs.com/) back-ends, Sail-JSON-API overrides default blueprints to provide a more robust communication interface. Sails-JSON-API provides [JSON API](http://jsonapi.org/) compliant actions, controllers, helpers, policies, and responses for Sails v1.0+ which are immediately available after installation.
 
-Sails-JSON-API is in the VERY early stages and should be treated as a WIP until further notice!
+As of v0.3.0, Sails-JSON-API has now begun its stable push towards a 1.0 release. If you're using this library in your project, please provide issues and feedback!
 
 ## Getting Started
 
@@ -329,26 +329,41 @@ npm test
 
 * JSON API implementation
   * [X] GET all resources
+  * [X] GET one resource
   * [X] POST resource
   * [X] DELETE resource
   * [X] PATCH resource
-  * [X] Return proper error if any
   * Relationships
     * [X] One to one
     * [X] One way associations
-    * [ ] Many to many (currently untested / partially implemented)
+    * [X] Many to many
     * [X] One to many
     * [X] Through relationships
+  * Update relationships via [relationship links](https://jsonapi.org/format/#crud-updating-relationships)
+    * [ ] To-One Relationships
+    * [ ] To-Many Relationships
   * [X] Sparse Fields
   * [X] Sorting
   * [X] Pagination
   * [X] Filtering
-  * [X] Special param 'include'
+  * Special param 'include' [Fetching Includes](https://jsonapi.org/format/#fetching-includes)
+    * [X] Include top level relationships
+    * [ ] Include nested relationships denoted with dot-notation
+  * Return proper error if any [Server Responsibilities](https://jsonapi.org/format/#content-negotiation-servers)
+    * [X] 406 Not Acceptable
+    * [ ] 409 Conflict
+    * [X] 415 Unsupported Media Type
+  * Allow [client generated IDs](https://jsonapi.org/format/#crud-creating-client-ids)
+    * [ ] Return '204 No Content' upon a successful creation
+    * [ ] Return '409 Conflict' when attempted to create a resource with an ID that already exists
+  * [ ] Custom non-dynamic, metadata applied to each response
+  * [ ] Location header upon successful resource [creation](https://jsonapi.org/format/#crud-creating-responses)
 * Sails integration
-  * [ ] Pubsub integration (Partially Implemented)
+  * [X] Pubsub integration
   * [X] Provide a helper to serialize as JSON API for custom endpoints
   * [ ] Enable configuration for blacklisting / whitelisting fields for projection queries
   * [ ] Additional configuration options (to be expanded)
+  * [ ] Support asynchronous actions that could take awhile to process (202 Accepted)
 
 ## Contributing
 
