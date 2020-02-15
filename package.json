@@ -31,9 +31,9 @@
         "node": ">=6.0.0"
     },
     "dependencies": {
-        "json-api-serializer": "1.15.1",
-        "lodash": "4.17.11",
-        "pluralize": "7.0.0"
+        "json-api-serializer": "2.3.0",
+        "lodash": "4.17.15",
+        "pluralize": "8.0.0"
     },
     "devDependencies": {
         "@babel/core": "7.8.4",
