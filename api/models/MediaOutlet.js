@@ -7,6 +7,10 @@ export default {
     },
     type: {
       type: 'string'
+    },
+    publishers: {
+      collection: 'Publisher',
+      via: 'outlet'
     }
   }
 };
