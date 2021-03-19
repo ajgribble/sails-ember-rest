@@ -89,22 +89,20 @@ describe('Integration | Action | populate', function() {
         .get('/comments/2/author')
         .expect(res => {
           const { data, meta } = res.body;
-          const focusDoc = data[0];
 
-          expect(data).to.have.lengthOf(1);
           expect(meta.total).to.equal(1);
 
-          expect(focusDoc.id).to.equal('3');
-          expect(focusDoc.type).to.equal('author');
-          expect(focusDoc.attributes['created-at']).to.exist;
-          expect(focusDoc.attributes.createdAt).to.not.exist;
+          expect(data.id).to.equal('3');
+          expect(data.type).to.equal('author');
+          expect(data.attributes['created-at']).to.exist;
+          expect(data.attributes.createdAt).to.not.exist;
 
-          expect(focusDoc.relationships).to.exist;
-          expect(Object.keys(focusDoc.relationships).length).to.equal(3);
-          expect(focusDoc.relationships.comments.links.related.href).to.equal(
-            `http://localhost:1337/authors/${focusDoc.id}/comments`
+          expect(data.relationships).to.exist;
+          expect(Object.keys(data.relationships).length).to.equal(3);
+          expect(data.relationships.comments.links.related.href).to.equal(
+            `http://localhost:1337/authors/${data.id}/comments`
           );
-          expect(focusDoc.relationships.comments.links.related.meta.count).to.equal(2);
+          expect(data.relationships.comments.links.related.meta.count).to.equal(2);
         })
         .end(done);
     });
@@ -285,10 +283,8 @@ describe('Integration | Action | populate', function() {
       .expect(res => {
         const { data } = res.body;
 
-        data.forEach(record => {
-          expect(record.attributes.name).to.exist;
-          expect(record.attributes.age).to.not.exist;
-        });
+        expect(data.attributes.name).to.exist;
+        expect(data.attributes.age).to.not.exist;
       })
       .end(done);
   });
@@ -312,10 +308,9 @@ describe('Integration | Action | populate', function() {
       .expect(res => {
         const { data, included } = res.body;
 
-        data.forEach(record => {
-          expect(record.attributes.name).to.exist;
-          expect(record.attributes.age).to.not.exist;
-        });
+        expect(data.attributes.name).to.exist;
+        expect(data.attributes.age).to.not.exist;
+
         included.forEach(record => {
           expect(record.type).to.equal('article');
           expect(record.attributes).to.not.exist;

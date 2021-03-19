@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import supertest from 'supertest';
 
 describe('Integration | Action | find', function() {
@@ -80,7 +81,6 @@ describe('Integration | Action | find', function() {
           expect(focusDoc.relationships.author.links.related.href).to.equal(
             `http://localhost:1337/articles/${focusDoc.id}/author`
           );
-          expect(focusDoc.relationships.author.links.related.meta.count).to.equal(1);
         })
         .end(done);
     });
@@ -289,16 +289,6 @@ describe('Integration | Action | find', function() {
               expect(record.relationships.comments.links.related.href).to.equal(
                 `http://localhost:1337/authors/${record.id}/comments`
               );
-
-              if (record.id === '1') {
-                expect(record.relationships.articles.links.related.meta.count).to.equal(1);
-                expect(record.relationships.comments.links.related.meta.count).to.equal(0);
-              }
-
-              if (record.id === '2') {
-                expect(record.relationships.articles.links.related.meta.count).to.equal(1);
-                expect(record.relationships.comments.links.related.meta.count).to.equal(1);
-              }
             } else {
               expect(record.relationships.article.links.related.href).to.equal(
                 `http://localhost:1337/comments/${record.id}/article`
@@ -306,9 +296,6 @@ describe('Integration | Action | find', function() {
               expect(record.relationships.author.links.related.href).to.equal(
                 `http://localhost:1337/comments/${record.id}/author`
               );
-
-              expect(record.relationships.article.links.related.meta.count).to.equal(1);
-              expect(record.relationships.author.links.related.meta.count).to.equal(1);
             }
           });
         })
@@ -330,11 +317,9 @@ describe('Integration | Action | find', function() {
           expect(focusDoc.relationships.articles.links.related.href).to.equal(
             `http://localhost:1337/authors/${focusDoc.id}/articles`
           );
-          expect(focusDoc.relationships.articles.links.related.meta.count).to.equal(1);
           expect(focusDoc.relationships.comments.links.related.href).to.equal(
             `http://localhost:1337/authors/${focusDoc.id}/comments`
           );
-          expect(focusDoc.relationships.comments.links.related.meta.count).to.equal(0);
         })
         .end(done);
     });
@@ -378,6 +363,20 @@ describe('Integration | Action | find', function() {
               expect(record.attributes['created-at']).to.not.exist;
             }
           });
+        })
+        .end(done);
+    });
+
+    it("should have data on relationships", function(done) {
+      supertest(sails.hooks.http.app)
+        .get("/articles")
+        .expect(200)
+        .expect(res => {
+          const { data } = res.body;
+          for(let record of data) {
+            expect(record.relationships.author.data).to.exist;
+            expect(record.relationships.comments.data).to.exist;
+          }
         })
         .end(done);
     });
