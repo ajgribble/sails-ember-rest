@@ -8,6 +8,9 @@ export default {
     authors: {
       collection: 'author',
       via: 'publishers'
+    },
+    outlet: {
+      model: 'MediaOutlet'
     }
   }
 };

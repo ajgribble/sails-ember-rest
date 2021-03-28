@@ -56,6 +56,11 @@ module.exports = function defineSailsJsonApiHook(sails) {
 
       // Once the ORM has loaded, dynamically register all models in the JSON API Serializer
       sails.on('hook:orm:loaded', function() {
+        const modelMap = {};
+        Object.keys(sails.models).forEach(modelName => {
+          modelMap[modelName.toLowerCase()] = kebabCase(sails.models[modelName].globalId);
+        });
+
         Object.keys(sails.models).forEach(modelName => {
           const Model = sails.models[modelName];
           const modelType = kebabCase(Model.globalId);
@@ -64,7 +69,7 @@ module.exports = function defineSailsJsonApiHook(sails) {
             // TODO: Implement 'self' link on relationship which allows direct manipulation
             return Object.assign({}, acc, {
               [alias]: {
-                type: kebabCase(type === 'model' ? model : collection),
+                type: modelMap[type === 'model' ? model : collection],
                 links(data, { relationships = {} }) {
                   const dataId = `${data.id}`;
                   const base = sails.helpers.generateResourceLink(modelPlural, dataId);
